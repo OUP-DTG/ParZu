@@ -33,11 +33,12 @@ def format_conversion(line):
     """format conversion into Prolog format"""
 
     try:
+        line = line.strip()
         word, pos = line.split()
         newline = "w('{0}', '{1}', ['{0}_{1}'], '{0}').".format(prolog_escape(word),prolog_escape(pos))
         return word, newline
     except:
-        if line == '\n':
+        if len(line) == 0:
             return '', "w('ENDOFSENTENCE','{0}',['._{0}'],'ENDOFSENTENCE').".format(sentdelim)
         else:
             sys.stderr.write('Error: Line does not have word and POS tag: {0}\n'.format(line))

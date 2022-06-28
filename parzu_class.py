@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright © 2009-2011 University of Zürich
 # Author: Rico Sennrich <sennrich@cl.uzh.ch>
@@ -283,8 +283,8 @@ class Parser():
         args = ['-q', '-s', 'ParZu-parser.pl']
         if prolog_newstacks:
             args += ['--stack-limit=496M']
-        else:
-            args += ['-G248M', '-L248M']
+        #else:
+        #    args += ['-G248M', '-L248M']
         self.prolog_parser = pexpect.spawn('swipl',
                                            args,
                                            echo=False,

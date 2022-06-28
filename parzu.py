@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright © 2009-2011 University of Zürich
 # Author: Rico Sennrich <sennrich@cl.uzh.ch>
@@ -296,10 +296,10 @@ def tokenize(instream,outstream,options):
     if options['linewise']:
         tokenizer_in = instream
     elif options['inputformat'] == 'tokenized_lines':
-      tokenizer = try_Popen(["python", os.path.join(root_directory,"preprocessor","tokenized_lines.py")], stdin=instream, stdout=outstream, stderr=options['senderror'])
+      tokenizer = try_Popen(["python3", os.path.join(root_directory,"preprocessor","tokenized_lines.py")], stdin=instream, stdout=outstream, stderr=options['senderror'])
       return tokenizer
     else:
-        sentences = try_Popen(["python", os.path.join(root_directory,"preprocessor","punkt_tokenizer.py")], stdin=instream, stdout=PIPE, stderr=options['senderror'])
+        sentences = try_Popen(["python3", os.path.join(root_directory,"preprocessor","punkt_tokenizer.py")], stdin=instream, stdout=PIPE, stderr=options['senderror'])
         tokenizer_in = sentences.stdout
     
     tokenizer = try_Popen(["perl", os.path.join(root_directory,"preprocessor","tokenizer.perl"), "-l","de"], stdin=tokenizer_in, stdout=outstream, stderr=options['senderror'])
@@ -316,7 +316,7 @@ def tag(instream,outstream,options):
     
     if options['nbestmode']:
         tagger = try_Popen(options["taggercmd"]+['-n',str(options['nbestmode'])], stdin=instream, stdout=PIPE, stderr=options['senderror'],cwd=root_directory)
-        tagger_formatted = try_Popen(['python',os.path.join(root_directory,"preprocessor","prune_nbest.py"),str(options['nbest_cutoff'])], stdin=tagger.stdout, stdout=outstream, stderr=options['senderror'])
+        tagger_formatted = try_Popen(['python3',os.path.join(root_directory,"preprocessor","prune_nbest.py"),str(options['nbest_cutoff'])], stdin=tagger.stdout, stdout=outstream, stderr=options['senderror'])
 
     else:
         tagger_formatted = try_Popen(options['taggercmd'], stdin=instream, stdout=outstream, stderr=options['senderror'],cwd=root_directory) 
@@ -334,7 +334,8 @@ def preprocess(instream,outstream,options):
     tagfile = open(options['tagfilepath'],'w')
     #convert to prolog-readable format
     #additionally, create list of word types to be analysed (written to 'morphinpath')
-    treetagger2prolog = try_Popen(["python", os.path.join(root_directory,"preprocessor","treetagger2prolog.py"), options['morphinpath'],options['sentdelim']], stdin=instream, stdout=tagfile, stderr=options['senderror'])
+
+    treetagger2prolog = try_Popen(["python3", os.path.join(root_directory,"preprocessor","treetagger2prolog.py"), options['morphinpath'],options['sentdelim']], stdin=instream, stdout=tagfile, stderr=options['senderror'])
 
     treetagger2prolog.wait()
     morphfile = open(options['morphpath'],'w')
@@ -344,14 +345,14 @@ def preprocess(instream,outstream,options):
 
         if options['morphology'] == 'gertwol':
             morphin = open(options['morphinpath'],'r')
-            gertwol = try_Popen(["python", "gertwol_parzu.py", options['gertwolcmd'], options['gertwolscorecmd']], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphin,stdout=morphfile,stderr=options['senderror'])
+            gertwol = try_Popen(["python3", "gertwol_parzu.py", options['gertwolcmd'], options['gertwolscorecmd']], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphin,stdout=morphfile,stderr=options['senderror'])
             gertwol.wait()
 
         elif options['morphology'] == 'smor':
             try:
                 morphin = open(options['morphinpath'],'r')
                 morphisto = try_Popen(["fst-infl2", options['smor_model']],stdin=morphin,stdout=PIPE,stderr=options['senderror'])
-                morphisto2prolog = try_Popen(["python", "morphisto2prolog.py"], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphisto.stdout,stdout=morphfile,stderr=options['senderror'])
+                morphisto2prolog = try_Popen(["python3", "morphisto2prolog.py"], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphisto.stdout,stdout=morphfile,stderr=options['senderror'])
                 morphisto2prolog.wait()
                 morphisto.wait()
                 if morphisto.returncode > 0:
@@ -360,7 +361,7 @@ def preprocess(instream,outstream,options):
             except RuntimeError:
                 morphin = open(options['morphinpath'],'r')
                 morphisto = try_Popen(["fst-infl", options['smor_model']],stdin=morphin,stdout=PIPE,stderr=options['senderror'])
-                morphisto2prolog = try_Popen(["python", "morphisto2prolog.py"], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphisto.stdout,stdout=morphfile,stderr=options['senderror'])
+                morphisto2prolog = try_Popen(["python3", "morphisto2prolog.py"], cwd=os.path.join(root_directory,'preprocessor','morphology'),stdin=morphisto.stdout,stdout=morphfile,stderr=options['senderror'])
                 morphisto2prolog.wait()
                 morphisto.wait()
             except OSError as e:
@@ -391,7 +392,7 @@ def preprocess2(instream,outstream,options):
     options['senderror'].write("Starting preprocessor\n")
 
     #convert to prolog-readable format
-    treetagger2prolog = try_Popen(["python", os.path.join(root_directory,"preprocessor","treetagger2prolog.py"), '/dev/null',options['sentdelim']], stdin=instream, stdout=PIPE, stderr=options['senderror'])
+    treetagger2prolog = try_Popen(["python3", os.path.join(root_directory,"preprocessor","treetagger2prolog.py"), '/dev/null',options['sentdelim']], stdin=instream, stdout=PIPE, stderr=options['senderror'])
 
     #integrate morph. information and do verb complex analysis
     preprocessing =  try_Popen([prolog, '-q', prolog_load[prolog], os.path.join(root_directory,'preprocessor','preprocessing.pl'), '-g', 'retractall(lemmatisation(_)),retractall(morphology(_)),assert(lemmatisation('+ options['morphology'] +')),assert(morphology('+ options['morphology'] +")),retract(sentdelim(_)),assert(sentdelim('"+ options['sentdelim'] +"')),start('" + options['morphpath'] + "'),halt."], stdout=outstream, stdin=treetagger2prolog.stdout, stderr=options['senderror'])
@@ -413,16 +414,16 @@ def parse(instream,outstream,options):
     args = 'retract(outputformat(_)),assert(outputformat('+ outputformat +")),retract(sentdelim(_)),assert(sentdelim('"+ options['sentdelim'] +"')),retract(returnsentdelim(_)),assert(returnsentdelim("+ options['returnsentdelim'] +')),retract(nbestmode(_)),assert(nbestmode('+ str(options['nbestmode']) +')),retractall(morphology(_)),assert(morphology('+ morphology_mapping[str(options['morphology'])] +')),retractall(lemmatisation(_)),assert(lemmatisation('+ morphology_mapping[str(options['morphology'])] +')),retractall(extrainfo(_)),assert(extrainfo('+ options['extrainfo'] +')),start,halt.'
     
     if enable_multiprocessing and options['num_processes'] > 1:
-        parsing = try_Popen(["python", os.path.join(root_directory,"core","multiprocessed_parsing.py"), str(options['num_processes']), args, options['sentdelim'], os.path.join(root_directory,'core'),prolog, prolog_load[prolog]], stdin=instream,stdout=outstream,stderr=options['senderror'])
+        parsing = try_Popen(["python3", os.path.join(root_directory,"core","multiprocessed_parsing.py"), str(options['num_processes']), args, options['sentdelim'], os.path.join(root_directory,'core'),prolog, prolog_load[prolog]], stdin=instream,stdout=outstream,stderr=options['senderror'])
 
     else:
         runCMD = [prolog, '-q', prolog_load[prolog], 'ParZu-parser.pl', '-g', args]
         
-        if prolog.endswith('swipl'):
-            runCMD += ['-G248M', '-L248M']
-        
+        #if prolog.endswith('swipl'):
+        #    runCMD += ['-G248M', '-L248M']
+
         parsing = try_Popen(runCMD, cwd=os.path.join(root_directory,'core'), stdin=instream, stdout=outstream, stderr=options['senderror'])
-        
+
     return parsing
 
 
@@ -448,12 +449,11 @@ def postprocess(instream,outstream,options):
     else:
         arg = 'conll'
 
-    clean_parse = try_Popen(["python", os.path.join(root_directory,"postprocessor","cleanup_output.py"), arg], stdin=instream, stdout=cleanup_out, stderr=options['senderror'])
+    clean_parse = try_Popen(["python3", os.path.join(root_directory,"postprocessor","cleanup_output.py"), arg], stdin=instream, stdout=cleanup_out, stderr=options['senderror'])
 
     #select one analysis from n-best
     if options['nbestmode']:
-        return_best = try_Popen(["python", os.path.join(root_directory,'postprocessor','select_from_nbest.py'), outputformat], stdin=clean_parse.stdout,stdout=outstream,stderr=options['senderror'])
-
+        return_best = try_Popen(["python3", os.path.join(root_directory,'postprocessor','select_from_nbest.py'), outputformat], stdin=clean_parse.stdout,stdout=outstream,stderr=options['senderror'])
         return return_best
 
     return clean_parse
